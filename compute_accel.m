@@ -31,10 +31,10 @@ function [ax,ay,atheta] = compute_accel(x,y,theta,box_params)
         Pi = P_world(:,i);
 
         F = compute_spring_force(box_params.k_list(i),box_params.l0_list(i),Qi,Pi);
-        torque = norm(cross([Pi; 0] - [x; y; 0], [F; 0]));
+        torque = cross([Pi; 0] - [x; y; 0], [F; 0]);
 
         F_sum = F_sum + F;
-        torque_sum = torque_sum + torque;
+        torque_sum = torque_sum + torque(3);
     end
 
     trans_accel = ([0; -1*box_params.m*box_params.g] + F_sum) ./ box_params.m;
