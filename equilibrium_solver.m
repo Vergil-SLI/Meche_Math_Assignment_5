@@ -1,4 +1,5 @@
 function equilibrium_solver()
+    clear;
     LW = 10; LH = 1; LG = 3;
     m = 1; Ic = (1/12)*(LH^2+LW^2);
     g = 1; k = 20; k_list = [.5*k,.5*k,2*k,5*k];
@@ -35,10 +36,11 @@ function equilibrium_solver()
     vx0 = 0; 
     vy0 = 0; 
     vtheta0 = 0; 
-    V0 = [x0; y0; theta0; vx0; vy0; vtheta0];
+
+    V0_nonlinear = [x0; y0; theta0; vx0; vy0; vtheta0];
 
     solver_params = struct();
-    [V_eq, exit_flag] = multi_newton(rate_func,V0,solver_params)
+    [V_eq, exit_flag] = multi_newton(rate_func,V0_nonlinear,solver_params);
 
 
     %Linearization________________________________________________________
@@ -50,15 +52,9 @@ function equilibrium_solver()
     vtheta0 = 0;
 
     %small number used to scale initial perturbation
-    epsilon = 10^-6; 
-    V0 = V_eq + epsilon*[dx0;dy0;dtheta0;vx0;vy0;vtheta0];
+    epsilon_list = linspace((10e-3),10,5); %Replace with a real set of values pls 
     tspan = [0; 10];
 
-    % rate functions that we're comparing
-    J_approx = approximate_jacobian_for_newton(rate_func, V_eq);
-    nonlinear_func = @(t,V) box_rate_func(t,V,box_params);
-    linear_func = @(t,V) (J_approx * (V-V_eq));
-    
     % define values of RK method (explicit midpoint)
     h_ref = 0.01;
     BT_struct = struct();
@@ -66,17 +62,50 @@ function equilibrium_solver()
     BT_struct.B = [0, 1];% vector of b_i values
     BT_struct.C = [0, 0.5]; % vector of c_i values
 
-    % run the integration of nonlinear system
-    [tlist_nonlinear,Vlist_nonlinear] = explicit_RK_fixed_step_integration(nonlinear_func,tspan,V0,h_ref,BT_struct);
-    % run the integration of linear system
-    [tlist_linear,Vlist_linear] = explicit_RK_fixed_step_integration(linear_func,tspan,V0,h_ref,BT_struct);
+    for epsilon = 1:length(epsilon_list)
+
+        V0_linear = V_eq + epsilon*[dx0;dy0;dtheta0;vx0;vy0;vtheta0];
+
+        % rate functions that we're comparing
+        J_approx = approximate_jacobian_for_newton(rate_func, V_eq);
+        nonlinear_func = @(t,V) box_rate_func(t,V,box_params);
+        linear_func = @(t,V) (J_approx * (V-V_eq));
+
+        % run the integration of nonlinear system
+        [tlist_nonlinear,Vlist_nonlinear] = explicit_RK_fixed_step_integration(nonlinear_func,tspan,V0_nonlinear,h_ref,BT_struct);
+        % run the integration of linear system
+        [tlist_linear,Vlist_linear] = explicit_RK_fixed_step_integration(linear_func,tspan,V0_linear,h_ref,BT_struct);
+
+        % plot comparisons_____________________________________________________
+        figure(1)
+        % x vs. t
+        subplot(3,1,1); hold on;
+        Delta_V = abs(Vlist_linear-Vlist_nonlinear);
+        plot(tlist_nonlinear,Delta_V(1,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
+        title('X vs time')
+        xlabel("Time")
+        ylabel("X Values")
+        legend(); hold off;
+
+        % y vs. t
+        subplot(3,1,2); hold on;
+        plot(tlist_nonlinear,Delta_V(2,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
+        title('Y vs time')
+        xlabel("Time")
+        ylabel("Y Values")
+        legend()
+        hold off;
+
+        % theta vs. t
+        subplot(3,1,3); hold on;
+        plot(tlist_nonlinear,Delta_V(3,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
+        title('Theta vs time')
+        xlabel("Time")
+        ylabel("Theta Values")
+        legend()
+        hold off;
+    end
     
-    % plot comparisons_____________________________________________________
-    % x vs. t
-
-    % y vs. t
-
-    % theta vs. t
 end
 
 
