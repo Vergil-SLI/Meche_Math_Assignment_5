@@ -30,23 +30,35 @@ function equilibrium_solver()
     %load the system parameters into the rate function via an anonymous function
     rate_func = @(V_in) box_rate_func(t_in,V_in,box_params);
     x0 = 0; 
-    y0 = 0;
-    theta0 = pi/6;
+    y0 = -0.5;
+    theta0 = 0;
     vx0 = 0; 
-    vy0 = 1; 
-    vtheta0 = pi/4; 
+    vy0 = 0; 
+    vtheta0 = 0; 
     V0 = [x0; y0; theta0; vx0; vy0; vtheta0];
 
     solver_params = struct();
-    [V_eq, exit_flag] = multi_newton(rate_func,V0,solver_params);
+    [V_eq, exit_flag] = multi_newton(rate_func,V0,solver_params)
+
 
     %Linearization________________________________________________________
-    % initial values (near equilibrium)
-    V0 = V_eq;
-    tspan = [0; 10];
-    J_approx = approximate_jacobian_for_newton(rate_func, V_eq);
-    J_approx = J_approx(4:6, 1:3);
+    dx0 = 1;
+    dy0 = 1;
+    dtheta0 = pi/6; 
+    vx0 = 0; 
+    vy0 = 0;
+    vtheta0 = 0;
 
+    %small number used to scale initial perturbation
+    epsilon = 10^-6; 
+    V0 = V_eq + epsilon*[dx0;dy0;dtheta0;vx0;vy0;vtheta0];
+    tspan = [0; 10];
+
+    % rate functions that we're comparing
+    J_approx = approximate_jacobian_for_newton(rate_func, V_eq);
+    nonlinear_func = @(t,V) box_rate_func(t,V,box_params);
+    linear_func = @(t,V) (J_approx * (V-V_eq));
+    
     % define values of RK method (explicit midpoint)
     h_ref = 0.01;
     BT_struct = struct();
@@ -54,11 +66,17 @@ function equilibrium_solver()
     BT_struct.B = [0, 1];% vector of b_i values
     BT_struct.C = [0, 0.5]; % vector of c_i values
 
-    % the 2 functions we're comparing
-    nonlinear_func = @(t,V) box_rate_func(t,V,box_params);
-    linear_func = @(t,V) J_approx*(V-V_eq);
-
+    % run the integration of nonlinear system
+    [tlist_nonlinear,Vlist_nonlinear] = explicit_RK_fixed_step_integration(nonlinear_func,tspan,V0,h_ref,BT_struct);
+    % run the integration of linear system
+    [tlist_linear,Vlist_linear] = explicit_RK_fixed_step_integration(linear_func,tspan,V0,h_ref,BT_struct);
     
+    % plot comparisons_____________________________________________________
+    % x vs. t
+
+    % y vs. t
+
+    % theta vs. t
 end
 
 

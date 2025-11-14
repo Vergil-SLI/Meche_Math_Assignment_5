@@ -37,10 +37,10 @@ function simulate_box()
     % vy0 = 1; 
     % vtheta0 = pi/4; 
     
-    % one of the equilibriums (unstable)
-    x0 = 0.0119; 
-    y0 = -1.6707;
-    theta0 = 0.3188;
+    % one of the equilibriums (stable)
+    x0 = 0.0182; 
+    y0 = 0.1478;
+    theta0 = -0.0321;
     vx0 = 0; 
     vy0 = 0; 
     vtheta0 = 0; 
@@ -59,8 +59,16 @@ function simulate_box()
     % run the integration
     % Vlist is a list of [x;y;theta;dxdt;dydt;dthetadt]
     [tlist,Vlist] = explicit_RK_fixed_step_integration(rate_func,tspan,V0,h_ref,BT_struct);
+    
+    % plot x & y
+    figure(1);
+    plot(tlist, Vlist(1, :))
+    hold on
+    plot(tlist, Vlist(2, :))
+    legend("x", "y")
 
     % plot the springs as animation
+    figure(2);
     num_zigs = 5;
     w = .1;
     hold on;
