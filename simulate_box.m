@@ -28,12 +28,23 @@ function simulate_box()
 
     %load the system parameters into the rate function via an anonymous function
     rate_func = @(t_in,V_in) box_rate_func(t_in,V_in,box_params);
-    x0 = 0; 
-    y0 = 0;
-    theta0 = pi/6;
+    
+    % rando values
+    % x0 = 0; 
+    % y0 = 0;
+    % theta0 = pi/6;
+    % vx0 = 0; 
+    % vy0 = 1; 
+    % vtheta0 = pi/4; 
+    
+    % one of the equilibriums (unstable)
+    x0 = 0.0119; 
+    y0 = -1.6707;
+    theta0 = 0.3188;
     vx0 = 0; 
-    vy0 = 1; 
-    vtheta0 = pi/4; 
+    vy0 = 0; 
+    vtheta0 = 0; 
+    
 
     V0 = [x0; y0; theta0; vx0; vy0; vtheta0];
     tspan = [0; 10];
