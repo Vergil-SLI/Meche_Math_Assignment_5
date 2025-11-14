@@ -111,24 +111,18 @@ function equilibrium_solver()
 
 
    epsilon = 10e-3;
-   V0 = V_eq + epsilon*[Umode(:,1);0;0;0];
+   V0 = Veq + epsilon*[Umode;0;0;0];
    tspan = [0,10];
    %run the integration of nonlinear system
    [tlist_nonlinear,Vlist_nonlinear] = explicit_RK_fixed_step_integration(nonlinear_func,tspan,V0,h_ref,BT_struct);
 
-   x_modal = V_eq(1)+epsilon*Umode(:,1)*cos(omega_n(1,1)*tlist_nonlinear);
-   y_modal = V_eq(2)+epsilon*Umode(:,2)*cos(omega_n(1,1)*tlist_nonlinear);
-   theta_modal = V_eq(3)+epsilon*Umode(:,3)*cos(omega_n(1,1)*tlist_nonlinear);
+   x_modal = Veq(1)+epsilon*Umode(:,1)*cos(omega_n(1,1)*tlist);
+   y_modal = Veq(2)+epsilon*Umode(:,2)*cos(omega_n(1,1)*tlist);
+   theta_modal = Veq(3)+epsilon*Umode(:,3)*cos(omega_n(1,1)*tlist);
 
-   % x_modal = V_eq(1)+epsilon*Umode(:,1)*cos(omega_n(1,1)*tlist);
-   % y_modal = V_eq(2)+epsilon*Umode(:,2)*cos(omega_n(1,1)*tlist);
-   % theta_modal = V_eq(3)+epsilon*Umode(:,3)*cos(omega_n(1,1)*tlist);
-
-   figure(2); hold on;
+   figure(2); hold on; 
    plot(tlist_nonlinear,Vlist_nonlinear(1,:), DisplayName="NonLinear")
-   plot(tlist_nonlinear, x_modal, DisplayName="Modal")
-   legend() 
-   hold off;
+   plot(tlist_linear, x_modal)
 end
 
 % Numerical Approximation of the Jacobian

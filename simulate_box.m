@@ -80,12 +80,28 @@ function simulate_box()
     axis equal; axis square;
     axis([-10,10,-10,10])
 
+    
+    % setup for modal animation
+    V_eq = [0.0182; 0.1478; -0.0321; 0; 0; 0];
+    rate_func = @(V_in) box_rate_func(0,V_in,box_params);
+    J_approx = approximate_jacobian_for_newton(rate_func, V_eq);
+    Q = J_approx(4:6,1:3);
+    [Umode,omega_n] = eigs(Q);
+
+
+   epsilon = 10e-2;
+   x_modal = V_eq(1)+epsilon*Umode(:,1)*cos(omega_n(1,1)*tlist);
+   y_modal = V_eq(2)+epsilon*Umode(:,2)*cos(omega_n(1,1)*tlist);
+   theta_modal = V_eq(3)+epsilon*Umode(:,3)*cos(omega_n(1,1)*tlist);
 
     for i = 1:length(tlist)
         % find the springs' endpoint that's attached to box
-        x = Vlist(1, i);
-        y = Vlist(2, i);
-        theta = Vlist(3, i);
+        % x = Vlist(1, i);
+        % y = Vlist(2, i);
+        % theta = Vlist(3, i);
+        x = x_modal(i);
+        y = y_modal(i);
+        theta = theta_modal(i);
         P_world = compute_rbt(x,y,theta,P_box);
 
         % draw springs
@@ -139,4 +155,17 @@ function spring_plot_struct = initialize_spring_plot(num_zigs,w)
     spring_plot_struct.zig_zag = zig_zag;
     spring_plot_struct.line_plot = plot(0,0,'k','linewidth',2);
     spring_plot_struct.point_plot = plot(0,0,'ro','markerfacecolor','r','markersize',7);
+end
+
+% Numerical Approximation of the Jacobian
+function J = approximate_jacobian_for_newton(fun,x)
+    J = [];
+    h = 1e-6;
+
+    for j = 1:length(x)
+        basis_j = zeros(length(x), 1);
+        basis_j(j) = 1;
+        column = (fun(x + h*basis_j) - fun(x - h*basis_j)) / (2*h);
+        J = [J, column];
+    end
 end
