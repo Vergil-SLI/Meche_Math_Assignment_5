@@ -105,29 +105,58 @@ function equilibrium_solver()
         % legend()
         % hold off;
     end
-   %%Modal___________________________________________________________
+   
+   % Modal___________________________________________________________
    Q = J_approx(4:6,1:3);
-   [Umode,omega_n] = eigs(Q);
+   [Umode,D] = eigs(Q);
 
 
    epsilon = 10e-3;
    V0 = V_eq + epsilon*[Umode(:,1);0;0;0];
-   tspan = [0,10];
+   mode_number = 1;
+   omega_n = sqrt(-D(mode_number,mode_number));
+
+   tspan = [0,3*2*pi/omega_n];
+   h_ref = tspan(2)/1000;
    %run the integration of nonlinear system
    [tlist_nonlinear,Vlist_nonlinear] = explicit_RK_fixed_step_integration(nonlinear_func,tspan,V0,h_ref,BT_struct);
+   
+   x_modal = V_eq(1)+epsilon*Umode(1,mode_number)*cos(omega_n*tlist_nonlinear);
+   y_modal = V_eq(2)+epsilon*Umode(2,mode_number)*cos(omega_n*tlist_nonlinear);
+   theta_modal = V_eq(3)+epsilon*Umode(3,mode_number)*cos(omega_n*tlist_nonlinear);
 
-   x_modal = V_eq(1)+epsilon*Umode(:,1)*cos(omega_n(1,1)*tlist_nonlinear);
-   y_modal = V_eq(2)+epsilon*Umode(:,2)*cos(omega_n(1,1)*tlist_nonlinear);
-   theta_modal = V_eq(3)+epsilon*Umode(:,3)*cos(omega_n(1,1)*tlist_nonlinear);
+   % plotting ts
+   figure(2);
+   % x vs. t
+   subplot(3,1,1); 
+   plot(tlist_nonlinear,Vlist_nonlinear(1,:), DisplayName="Nonlinear x")
+   hold on;
+   plot(tlist_nonlinear, x_modal, DisplayName="Modal x")
+   title("X vs time (mode shape " + mode_number + " )")
+   xlabel("Time")
+   ylabel("X Values")
+   legend(); hold off;
 
-   % x_modal = V_eq(1)+epsilon*Umode(:,1)*cos(omega_n(1,1)*tlist);
-   % y_modal = V_eq(2)+epsilon*Umode(:,2)*cos(omega_n(1,1)*tlist);
-   % theta_modal = V_eq(3)+epsilon*Umode(:,3)*cos(omega_n(1,1)*tlist);
+   % y vs. t
+   subplot(3,1,2); 
+   plot(tlist_nonlinear,Vlist_nonlinear(2,:), DisplayName="Nonlinear y")
+   hold on;
+   plot(tlist_nonlinear, y_modal, DisplayName="Modal y")
+   title("Y vs time (mode shape " + mode_number + " )")
+   xlabel("Time")
+   ylabel("Y Values")
+   legend()
+   hold off;
 
-   figure(2); hold on;
-   plot(tlist_nonlinear,Vlist_nonlinear(1,:), DisplayName="NonLinear")
-   plot(tlist_nonlinear, x_modal, DisplayName="Modal")
-   legend() 
+   % theta vs. t
+   subplot(3,1,3); 
+   plot(tlist_nonlinear,Vlist_nonlinear(3,:), DisplayName="Nonlinear theta")
+   hold on;
+   plot(tlist_nonlinear, theta_modal, DisplayName="Modal theta")
+   title("Theta vs time (mode shape " + mode_number + " )")
+   xlabel("Time")
+   ylabel("Theta Values")
+   legend()
    hold off;
 end
 
