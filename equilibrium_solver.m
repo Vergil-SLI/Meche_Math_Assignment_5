@@ -52,7 +52,7 @@ function equilibrium_solver()
     vtheta0 = 0;
 
     %small number used to scale initial perturbation
-    epsilon_list = linspace((10e-3),10,2); %Replace with a real set of values pls 
+    epsilon_list = linspace((10e-3),10,5); %Replace with a real set of values pls 
     tspan = [0; 10];
 
     % define values of RK method (explicit midpoint)
@@ -78,32 +78,32 @@ function equilibrium_solver()
 
         % plot comparisons_____________________________________________________
         Delta_V = abs(Vlist_linear-Vlist_nonlinear);
-        % figure(1)
-        % % x vs. t
-        % subplot(3,1,1); hold on;
-        % plot(tlist_nonlinear,Delta_V(1,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
-        % title('X vs time')
-        % xlabel("Time")
-        % ylabel("X Values")
-        % legend(); hold off;
-        % 
-        % % y vs. t
-        % subplot(3,1,2); hold on;
-        % plot(tlist_nonlinear,Delta_V(2,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
-        % title('Y vs time')
-        % xlabel("Time")
-        % ylabel("Y Values")
-        % legend()
-        % hold off;
-        % 
-        % % theta vs. t
-        % subplot(3,1,3); hold on;
-        % plot(tlist_nonlinear,Delta_V(3,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
-        % title('Theta vs time')
-        % xlabel("Time")
-        % ylabel("Theta Values")
-        % legend()
-        % hold off;
+        figure(1)
+        % x vs. t
+        subplot(3,1,1); hold on;
+        plot(tlist_nonlinear,Delta_V(1,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
+        title('X vs time')
+        xlabel("Time")
+        ylabel("X Values")
+        legend(); hold off;
+
+        % y vs. t
+        subplot(3,1,2); hold on;
+        plot(tlist_nonlinear,Delta_V(2,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
+        title('Y vs time')
+        xlabel("Time")
+        ylabel("Y Values")
+        legend()
+        hold off;
+
+        % theta vs. t
+        subplot(3,1,3); hold on;
+        plot(tlist_nonlinear,Delta_V(3,:), DisplayName="Epsilon= " + epsilon_list(epsilon))
+        title('Theta vs time')
+        xlabel("Time")
+        ylabel("Theta Values")
+        legend()
+        hold off;
     end
    
    % Modal___________________________________________________________
@@ -112,8 +112,8 @@ function equilibrium_solver()
 
 
    epsilon = 10e-3;
-   V0 = V_eq + epsilon*[Umode(:,1);0;0;0];
-   mode_number = 1;
+   mode_number = 3;
+   V0 = V_eq + epsilon*[Umode(:,mode_number);0;0;0];
    omega_n = sqrt(-D(mode_number,mode_number));
 
    tspan = [0,3*2*pi/omega_n];
